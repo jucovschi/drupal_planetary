@@ -6,16 +6,24 @@
  * By: Lucas & Joe
    
  * Still to do: 
+
     - we should be able to mark garbagy questions as "Won't fix".
     - It would be nice to be able to save questions to a "dossier" of "things
       I'm working on" (integration with collections module?) -- this is related to
       the ability to specify "goals"
 
+ * In progress: Show unanswered questions in the context where they were asked.
+
  * Things to contemplate:
+
     - Similar to StackExchange, a question could have multiple answers (NB. much
       like a problem can have multiple solutions, or a collection has multiple
       component elements).  At the moment this isn't the route we take however!
-    + we would then provide a way to rate the answers or select the best answer etc.
+
+    - Perhaps not too hard to "multiply out" the attachments and the notes, using some
+      tricky field reference stuff.  This can be left for another round of prototyping.
+
+    - we would then provide a way to rate the answers or select the best answer etc.
       (la la la!)
  */
 
@@ -30,7 +38,6 @@ function question_node_info() {
 				    'help' => '',
 				    ));
 }
-
 
 // Rather than attaching solutions, we can attach places where this question is 
 // answered.  In the "requests" case, this would be an article that fulfils the
@@ -79,6 +86,8 @@ function question_menu() {
 // Once the article that contains the answer has been selected,
 // we need to do something sensible.  In this case, what we do is
 // add values to the relevant fields on the question node.
+//
+// Note: we'll also want to interactively populate the note field...
 function question_confirm_attachment($nid_of_question,$nid_of_answer){
   global $user;
   $question_node = node_load($nid_of_question);
@@ -94,9 +103,18 @@ function question_confirm_attachment($nid_of_question,$nid_of_answer){
   // save our changes
   node_save($question_node);
 
-  drupal_set_message('Article '.$nid_of_answer.' is now attached to this question as the answer');
+  drupal_set_message('Article '.$nid_of_answer
+		     .' is now attached to this question as the answer.'
+		     .'<br><br>Do you want to '
+		     .l("add a note to the reader?",'node/'.$nid_of_question.'/edit'));
+
+  db_merge('question_has_answer')
+    ->key(array('qid' =>$nid_of_question , 'aid' => $nid_of_answer))
+    ->fields(array('qid' =>$nid_of_question , 'aid' => $nid_of_answer))
+    ->execute();
+
   drupal_goto('node/'.$nid_of_question);
-  dpm($question_node);
+  // dpm($question_node);
 }
 
 function question_decouple_connection($nid_of_question,$nid_of_answer){
@@ -121,8 +139,9 @@ function question_get_all_articles(){
   return $result;
 }
 
-// This just allows us to have a link like "node/ask/question/%" for asking questions
-// The actual processing of $nid is done by question_form_question_node_form_alter
+// This just allows us to have a link like "node/ask/question/%" for
+// asking questions The actual processing of $nid is done by
+// question_form_question_node_form_alter
 function question_attach_question($nid) {
   drupal_goto('node/add/question/'.$nid);
 }
@@ -227,6 +246,8 @@ function question_authorlinks_assemble_question($node){
   return $newlinks;
 }
 
+// This function and associated things it calls are out of date, supplanted by
+// things in the attachable content module
 function question_add_links_question($node) {
     $links = array(
 		   'attach-answer' => l('Answer this question', 
@@ -241,33 +262,15 @@ function question_add_links_question($node) {
 // themed nicely
 //
 // So why doesn't the thing show up?
-function question_node_view($node){
-
-  // For articles, we can ASK a question
-  if($node->type == 'article'){
-    $newlinks = question_authorlinks_assemble_article($node);
-
-    $node->content['planetary_links'] = array(
-					      '#markup' => '',
-					      '#weight' => 10,
-					      '#theme' => 'planetary_links',
-					      '#links' => $newlinks
-					      );
-  }
-  
-  // For questions, we can add an ANSWER...
-  // But I'm getting rid of this functionality because we'll provide it
-  // using the "attachable content" module
-
-/*
-  if($node->type == 'question'){
-    //dd("What's the article?");
-    //dd($node->field_question_article['und'][0]['nid']);
-    // ... but that only makes sense if no answer has been given already
-
- 
-    if(!isset($node->field_question_closed['und'][0]['value'])) {
-      $newlinks = question_authorlinks_assemble_question($node);
+function question_node_view($node,$view_mode){
+  if($view_mode!='content'){
+    $mytype=$node->type;
+    // For articles, we can ASK a question
+    if($mytype == 'article'
+       || $mytype == 'problem'
+       || $mytype == 'collection'
+       || $mytype == 'solution'){
+      $newlinks = question_authorlinks_assemble_article($node);
 
       $node->content['planetary_links'] = array(
 						'#markup' => '',
@@ -275,27 +278,46 @@ function question_node_view($node){
 						'#theme' => 'planetary_links',
 						'#links' => $newlinks
 						);
+    }
   }
-} */ 
 }
-
+// We don't have to specially set a reference to the user who *submits*
+// the question, since that's recorded for us by normal drupal "insert"
+// routine.  However, we *will* have to record a reference to the user
+// who *closes* the question.  That will have to follow a similar
+// logic to what we do here (I think?), but done elsewhere (?).
+//
 function question_form_question_node_form_alter(&$form, &$form_state, $form_id) {
-  // We don't have to specially set a reference to the user who *submits*
-  // the question, since that's recorded for us by normal drupal "insert"
-  // routine.  However, we *will* have to record a reference to the user
-  // who *closes* the question.  That will have to follow a similar
-  // logic to what we do here (I think?), but done elsewhere (?).
+  global $user;
 
-  if(isset($form['#node']->field_question_article['und'][0]['nid'])) {
-    $val = $form['#node']->field_question_article['und'][0]['nid'];
+  if(isset($form['#node']->field_question_fulfiller['und'][0]['uid'])
+     && $user->uid == $form['#node']->field_question_fulfiller['und'][0]['uid'] ){
+    $userIsFulfiller = TRUE;
+  } else {
+    $userIsFulfiller = FALSE;
+  }
+
+  if(isset($form['#node']->field_question_context['und'][0]['nid'])) {
+    $val = $form['#node']->field_question_context['und'][0]['nid'];
   } else {
     $val = arg(3); 
   } 
-  $form['field_question_article']['und'][0]['nid']['#default_value'] = $val;
+  $form['field_question_context']['und'][0]['nid']['#default_value'] = $val;
+
   if($val==NULL) {
+    hide($form['field_question_context']);
+  }
+  
+  $valb=NULL;
+  // gotta deal with the target article now
+  if(isset($form['#node']->field_question_article['und'][0]['nid'])) {
+    $valb = $form['#node']->field_question_article['und'][0]['nid'];
+  } 
+  if($valb==NULL) {
     hide($form['field_question_article']);
   }
-  // If the article isn't closed, then we don't want to see these
+
+  // If the question isn't closed, then we don't want to see these
   // (Actually we might never want to see these on a *form*, since they
   // should be filled in *automatically* when the question is answered...
   // feature to be added of course!)
@@ -313,13 +335,31 @@ function question_form_question_node_form_alter(&$form, &$form_state, $form_id) 
   }
   $default_submit=$form['#submit'];
   $form['#submit'] = array_merge(array('question_additional_submit_handler'),$default_submit);
+
+  // The fulfiller should really only be able to edit the note, but I
+  // guess we can allow them to edit the title as well...
+  if($userIsFulfiller){
+    hide($form['field_question_latex']);
+    hide($form['field_question_type']);
+  } else {
+    // The asker won't be able to edit the note
+    hide($form['field_question_note']);
+  }
   hide($form['field_question_fulfiller']);
-  hide($form['field_question_closed']);
+
+  // Unless this is un-hidden, this gives an error when going to re-edit the article
+  // -- however, we want it to be hidden, so the best solution is probably to hide it with
+  // Javascript...
+  // hide($form['field_question_closed']);
+  $path = drupal_get_path('theme','planetmath');
+  drupal_add_js("$path/js/theme_question_node.js");
 }
 
 function question_additional_submit_handler(&$form, &$form_state) {
-  // If the user deletes the reference to the article, then the fulfilled time goes away
-  // and the question is open again
+
+  // If the user deletes the reference to the article that contains
+  // the answer, then the fulfilled time goes away and the question is
+  // open again
   if(!isset($form['#node']->field_question_article['und'][0]['nid'])
     ||!$form['#node']->field_question_article['und'][0]['nid']){
     //dd("zap");
@@ -330,4 +370,61 @@ function question_additional_submit_handler(&$form, &$form_state) {
     $form_state['values']['field_question_closed']['und'][0]['timezone'] = NULL;
     //dpm($form_state);
   }
+}
+
+function question_node_insert($node){
+  if($node->type == 'question'){
+    if(isset($node->field_question_context) && isset($node->field_question_context['und'][0]['nid']))
+      {
+	db_merge('question_has_context')
+	  ->key(array('qid' =>$node->nid,
+		      'cid' => $node->field_question_context['und'][0]['nid']))
+	  ->fields(array('qid' =>$node->nid,
+			 'cid' => $node->field_question_context['und'][0]['nid']))
+	  ->execute();
+      }
+  }
+}
+
+/* Adding a block so that questions will show up in context... 
+ * - Here, $nid is our "context".
+ */
+
+function question_unanswered_block($nid) {
+  $node = node_load($nid);
+
+  // Select questions
+  $results = db_query("SELECT * FROM question_has_context WHERE question_has_context.cid = :nid AND NOT EXISTS (SELECT 1 from question_has_answer WHERE question_has_answer.qid = question_has_context.qid)",
+		      array(':nid' => $nid));
+
+  $html = '<ul> ';
+      foreach ($results as $result) {
+	if($result->qid){
+	  $interestingNode = node_load($result->qid);
+	  $html .= '<li>'.l($interestingNode->title, 'node/' . $result->qid).' by '.l($interestingNode->name, 'user/' . $interestingNode->uid).'</li>';
+	}
+      }
+  return array(
+	       'subject' => 'Burning Questions',
+	       'content' => $html
+	       );
+}
+
+function question_countLinks($nid){
+  $result = db_query("SELECT COUNT(*) AS cnt FROM question_has_context WHERE question_has_context.cid = :nid AND NOT EXISTS (SELECT 1 from question_has_answer WHERE question_has_answer.qid = question_has_context.qid)", array(':nid' => $nid))->fetchField();
+  if ($result > 0){
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
+function question_block_view($delta = '') {
+  $block = array();
+
+  if ($delta == 'unanswered') {
+    $block = question_unanswered_block(arg(1));
+  }
+
+  return $block;
 }

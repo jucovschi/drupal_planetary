@@ -106,6 +106,20 @@
       <?php print $submitted; ?>
     </div>
    <?php endif; ?>
+
+  <?php /* Only for questions!*/
+   if ($type === 'question'): ?>
+   <h2> Question </h2>
+   <?php
+     print render($content['field_question_latex']); ?>
+
+   <?php if (isset($content['field_question_note']['#items'][0]['document'])): ?>
+   <h2> Note to reader </h2>
+   <?php
+     print render($content['field_question_note']); ?>
+   <?php endif; ?>
+
+   <?php endif; ?>
   
   <?php /* Only for groups!*/
    if ($type === 'group'): ?>
@@ -168,6 +182,17 @@
    <?php endif; ?>
    <?php endif; ?>
 
+  <?php /* Only for solutions!*/
+   if ($type === 'solution'):  
+    if(isset($content['problem_content'])): ?>
+      <div id="problem_content" style="border:1px solid black;padding:4px;">
+      <h2> Problem: </h2>
+	 <?php print render($content['problem_content']); ?>
+      </div>
+    <?php print render($content['body']); ?>
+     <?php endif; ?>
+   <?php endif; ?>
+
   <div class="content"<?php print $content_attributes; ?>>
     <?php   /* Generic stuff for all nodes goes here */
     // We hide the comments and links now so that we can render them later (if desired).
@@ -181,22 +206,27 @@
     hide($content['field_sitedoc']);
     hide($content['field_published']);
     hide($content['planetary_links']);
+    hide($content['planetmath_og_display_coauthors']);
     //HACK to get the latex field to work
 //    hide($content['field_latex']);
     //END-HACK
     print render($content);
 ?> 
+  <?php if(isset($node->field_msc['und'][0]['value'])): ?>  
+  <h2>Mathematics Subject Classification</h2>
+  <?php $codes=explode(",",$node->field_msc['und'][0]['value']); 
+  foreach($codes as $code){
+    $code = trim($code);
+    $label=msc_browser_get_label($code);
+    if($label){
+    print $code . " " . l($label,"msc_browser/".$code) . "<br/>";
+    } else {
+      print $code . " " . "<em>no label found</em>";
+    }
+  }
+   endif; ?>
 
-<?php if(isset($node->field_msc['und'][0]['value'])): ?>
-  
-<h2>Mathematics Subject Classification</h2>
-
-<?php $codes=explode(",",$node->field_msc['und'][0]['value']); 
-foreach($codes as $code){
-  $code = trim($code);
-  print $code . " " . l(msc_browser_get_label($code),"msc_browser/".$code) . "<br/>";
-} endif; ?>
-  </div>
+ </div> <?php /* End of content div */ ?>
 
   <br />  
   <div id="planetary-links">

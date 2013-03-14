@@ -18,6 +18,10 @@ li a.active {
   /* overflow: hidden; /* Sometimes you want to prevent overlapping with main div. */
 }
 
+#navigation ul.menu {
+width: 500px !important;
+}
+
 #navigation ul.links, /* Main menu and secondary menu links */
 #navigation .content ul /* Menu block links */ {
   margin: 0;
@@ -46,6 +50,23 @@ li a.active {
  * Main menu and Secondary menu links
  */
 #main-menu {
+  margin-left: 10px;
+}
+
+#main-menu ul {
+  list-style-type: none !important;
+}
+
+#main-menu ul li {
+  list-style-type: none !important;
+  list-style-image: none;
+}
+
+#main-menu li.leaf {
+  list-style-type: none !important;
+  margin-left:-27px !important;
+  padding-left:-13px !important;
+  list-style-image: none !important;
 }
 
 #secondary-menu {

@@ -216,6 +216,7 @@ function collection_insert_content($nid) {
   // that already *include* the item once (in my opinion)... we can deal with that
   // via a subquery.  However, maybe we'll come back to that after we have the ability
   // to add content to collections directly.
+  
   $count = db_query("SELECT COUNT(nid) as count FROM node ".
 		    "WHERE type = 'collection' ".
 		    "AND uid = :uid ".
@@ -252,7 +253,8 @@ function collection_insert_content($nid) {
 		      );
     }
 
-    return l('Add a new collection', 'node/add/collection')//on top of the table
+    // message on top of the table
+    return l('Add a new collection', 'node/add/collection')
         . theme('table', array(
 			       'header' => $header,
 			       'rows' => $rows
@@ -260,11 +262,10 @@ function collection_insert_content($nid) {
         . theme('pager'); //adds the pagination element in the bottom of the table
   }
   else {
-    // in the occasion we do not have any content to list --
-    // (Actually, this should be changed, the user should be able to create a
-    // new collection the first time they do this.)
-    drupal_set_message("Sorry there is no valid collection to add to!");
-    drupal_goto('node/'.$nid);
+    // Create a collection and add the node, see implementation of
+    // hook_node_insert below for the relevant trick
+    drupal_set_message("Please create your first collection, and the node will be added automatically!");
+    drupal_goto('node/add/collection/'.$nid);
   }
 }
 
@@ -346,6 +347,22 @@ function theme_insert_content_icon($variables) {
       ))
   );
   return $output;
+}
+
+/* Implements hook_node_insert
+ * - Allow an extra value to be passed in, if it is present,
+ *   that's a node to add to the collection
+ */
+function collection_node_insert($node){
+  if($node->type=='collection'){
+    $val = arg(3); 
+    // we're intending to add a node directly to this collection
+    if($val!=""){
+      // Note, this doesn't do any typechecking, so provides a
+      // "loophole" whereby any node can be added to a collection....
+      collection_confirm_attachment($node->nid,$val);
+    }
+  }
 }
 
 function collection_confirm_attachment($collection_id, $content_id) {
@@ -447,7 +464,8 @@ function collection_user_add_links($node){
  * - Also provides links for the "Interact" block for various kinds of nodes
  *   (including collections of course!)
  */
-function collection_node_view($node) {
+function collection_node_view($node, $view_mode){
+  if($view_mode!='content'){
   global $user;
  
   // assuming we're looking at a *collection*
@@ -634,7 +652,7 @@ function collection_node_view($node) {
 						'#links' => $newlinks
 						);
     }
-
+  }
 }
 
 function collection_theme($existing, $type, $theme, $path) {
@@ -661,5 +679,54 @@ function theme_collection_contents($variables) {
 }
 
 
+/* Adding a block so that collections will show up in context... 
+ * - Here, $nid is our "context".
+ */
 
+function collection_incollection_block($nid) {
+  $node = node_load($nid);
 
+  // Select collections that have the given article as a piece of content.
+  $results = db_query("SELECT * FROM collection_has_content WHERE collection_has_content.nid = :nid",
+		      array(':nid' => $nid));
+
+  $html = '<ul> ';
+  $count=0;
+  foreach ($results as $result) {
+    $count=$count+1;
+    if($result->cid){
+      $interestingNode = node_load($result->cid);
+      $html .= '<li>'.l($interestingNode->title, 'node/' . $result->cid).' by '.l($interestingNode->name, 'user/' . $interestingNode->uid).'</li>';
+    }
+  }
+  
+  if($count>1){
+    $subject='In Collections';
+  } else {
+    $subject='In Collection';
+  }
+  return array(
+	       // Put this in the singular if there's only one...
+	       'subject' => $subject,
+	       'content' => $html
+	       );
+}
+
+function collection_countLinks($nid){
+  $result = db_query("SELECT COUNT(*) AS cnt FROM collection_has_content WHERE collection_has_content.nid = :nid", array(':nid' => $nid))->fetchField();
+  if ($result > 0){
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
+function collection_block_view($delta = '') {
+  $block = array();
+
+  if ($delta == 'incollection') {
+    $block = collection_incollection_block(arg(1));
+  }
+
+  return $block;
+}

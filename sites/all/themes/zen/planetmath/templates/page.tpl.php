@@ -90,9 +90,13 @@ $jq(document).ready(function () {
 });
 </script>
 
+<?php if ($is_front): ?>
+<link type="text/css" rel="stylesheet" media="all" href="/sites/all/themes/zen/planetmath/css/front.css" />
+<?php endif; ?>
+
 <div id="page-wrapper"><div id="page">
 
-  <div id="header"><div class="section clearfix">
+  <div id="header region-header"><div class="section clearfix">
 
     <?php if ($logo): ?>
       <a href="<?php print $front_page; ?>" title="<?php print t('Home'); ?>" rel="home" id="logo"><img src="<?php print $logo; ?>" alt="<?php print t('Home'); ?>" /></a>
@@ -119,27 +123,35 @@ $jq(document).ready(function () {
     <?php endif; ?>
 
     <ul id="secondary-menu" class="links inline clearfix">
-        <?php $user_menu = menu_navigation_links('user-menu');
-              print theme('links',
-			  array(
-				'links' => $user_menu,
-				'attributes' => array(
-						      'id' => 'user-menu',
-						      'class' => array('links', 'clearfix'),
-						      ),
-				'heading' => array(
-						   'text' => t('User menu'),
-						   'level' => 'h2',
-						   'class' => array('element-invisible'),
-						   ),
-				)); 
-        ?>
+    <?php $user_menu = menu_navigation_links('user-menu');
+		  print theme('links',
+			      array(
+				    'links' => $user_menu,
+				    'attributes' => array(
+							  'id' => 'user-menu',
+							  'class' => array('links', 'clearfix'),
+							  ),
+				    'heading' => array(
+						       'text' => t('User menu'),
+						       'level' => 'h2',
+						       'class' => array('element-invisible'),
+						       ),
+				    ));
+	    ?>
     </ul>
 
-    <?php print render($page['header']); ?>
+		  <?php print render($page['header']); ?> 
 
-  </div></div><!-- /.section, /#header -->
+ <?php if ($logged_in): ?> 
+    <div id="fill-this-space">
+     <div class="content"><br><br></div>
+    </div>
+ <?php endif;?>
+  <div style="clear:both"></div>
+ </div></div><!-- /.section, /#header -->
+
   <!-- <div class="hr-placeholder"></div> -->
+
   <div id="main-wrapper"><div id="main" class="clearfix<?php if ($main_menu || $page['navigation']) { print ' with-navigation'; } ?>">
     <?php if(!$is_front){ ?>
     <div id="content" class="column"><div class="section">
@@ -165,16 +177,16 @@ $jq(document).ready(function () {
     <?php } else { ?>
       <?php require_once('frontpage.tpl.php') ?>
     <?php } ?>
-    <?php if ($page['navigation'] || $main_menu): ?>
+
+    <?php if ($page['navigation']): ?>
       <div id="navigation"><div class="section clearfix">
-        <?php print render($main_menu_expanded);  ?>
         <?php print render($page['navigation']); ?>
       </div></div><!-- /.section, /#navigation -->
     <?php endif; ?>
 
-    <?php print render($page['sidebar_first']); ?>
+    <?php print render($page['sidebar_first']); ?> <!-- /sidebar_first -->
 
-    <?php print render($page['sidebar_second']); ?>
+    <?php print render($page['sidebar_second']); ?> <!-- /sidebar_second -->
 
   </div></div><!-- /#main, /#main-wrapper -->
 

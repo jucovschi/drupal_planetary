@@ -9,6 +9,22 @@ find out!
 
 Questions or ideas?  Get in touch via the [Google group](http://groups.google.com/group/planetary-dev).
 
+## Summary/TOC
+
+1. [Grab the code](https://github.com/cdavid/drupal_planetary/#grab-the-code-from-this-repository)
+1. [Install drush](https://github.com/cdavid/drupal_planetary/#install-drush)
+1. [Create database](https://github.com/cdavid/drupal_planetary/#create-database)
+1. [Configure Apache](https://github.com/cdavid/drupal_planetary/#configure-apache)
+1. [Install required modules](https://github.com/cdavid/drupal_planetary/#install-required-modules)
+1. [Install LaTeXML](https://github.com/cdavid/drupal_planetary/#install-latexml)
+1. [Set up Virtuoso](https://github.com/cdavid/drupal_planetary/#set-up-virtuoso)
+1. [Set up PyRDFa](https://github.com/cdavid/drupal_planetary/#set-up-pyrdfa)
+1. [Get the ACE Editor](https://github.com/cdavid/drupal_planetary/#get-the-ace-editor-and-put-it-in-your-libraries-directory)
+1. [Get the ShareJS repository](https://github.com/cdavid/drupal_planetary/#get-the-sharejs-repository)
+1. [Install Apache Solr](https://github.com/cdavid/drupal_planetary/#install-apache-solr)
+1. [LaTeX integration](https://github.com/cdavid/drupal_planetary/#latex-integration-to-generate-pdfs)
+1. [Install NNexus](https://github.com/cdavid/drupal_planetary/#install-nnexus)
+
 # Brief installation instructions
 
 Full instructions are [here](http://trac.mathweb.org/planetary/wiki/DrupalPorting).  
@@ -68,7 +84,8 @@ drush -y dl migrate views features reroute_email references \
  pathauto profile2 subform token relation \
  relation_select  legal recaptcha userpoints userpoints_nc \
  privatemsg content_access ctools delete_all devel backup_migrate commentrss \
- nodeaccess wysiwyg views_php sparql filefield_paths date dhtml_menu
+ nodeaccess wysiwyg views_php sparql filefield_paths date dhtml_menu \
+ riddler apachesolr apachesolr_views
 
 drush -y dl og-7.x-2.x-dev entityreference-7.x-1.x-dev entity-7.x-1.x-dev \
  views_bulk_operations-7.x-3.x-dev captcha-7.x-1.x-dev efq_views-7.x-1.x-dev \
@@ -88,7 +105,7 @@ libparse-recdescent-perl libxml-libxslt-perl libdb5.1 libdb5.1-dev \
 libgdbm-dev libarchive-zip-perl unzip
 
 sudo perl -MCPAN -e shell
-install Parse::RecDescent XML::LibXSLT DB_File Data::Compare
+install Parse::RecDescent XML::LibXSLT DB_File Data::Compare File::Which
 quit
 ```
 
@@ -174,6 +191,13 @@ sudo make install
 /usr/local/bin/virtuoso-t +configfile /usr/local/var/lib/virtuoso/db/virtuoso.ini -fd
 ```
 
+### Seed your triple store with the Math Subject Classification taxonomy
+
+```
+wget http://msc2010.org/mscwork/msc2010.skos
+curl -T msc2010.skos http://planetmath.org:8890/DAV/home/pm/rdf_sink/xml.rdf -H "Content-Type: application/rdf+xml" -u dav:PASSWORD
+```
+
 ## SET UP PYRDFA
 
 First of all, if you're going to use our ```pyrdfa``` module, don't forget that you'll have to patch the Drupal core (see full instructions for details)!
@@ -202,6 +226,8 @@ cd rdflib && sudo python setup.py install
 to LaTeXML and so on, but that will take a moment to set up.)
 
 ## GET THE ACE EDITOR, AND PUT IT IN YOUR LIBRARIES DIRECTORY
+
+Note that latest versions of this require a library that comes with GCC 4.7, see [these notes](http://askubuntu.com/questions/113291/how-do-i-install-gcc-4-7) on Ubuntu 12.04, including [this](http://superuser.com/a/394811/121972).
 
 ```
 git clone git://github.com/ajaxorg/ace.git

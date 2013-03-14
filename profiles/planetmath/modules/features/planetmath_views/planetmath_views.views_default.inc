@@ -59,7 +59,7 @@ function planetmath_views_views_default_views() {
   $handler->display->display_options['empty']['area']['label'] = 'AddProblem';
   $handler->display->display_options['empty']['area']['empty'] = TRUE;
   $handler->display->display_options['empty']['area']['content'] = '<ul class="action-links"> 
- <li><a href="node/add/problem">Add new Problem</a></li> 
+ <li><a href="node/add/question">Add new Question</a></li> 
 </ul> ';
   $handler->display->display_options['empty']['area']['format'] = 'full_html';
   /* Relationship: Content: Author */
@@ -159,10 +159,6 @@ function planetmath_views_views_default_views() {
     t('<ul class="action-links"> 
  <li><a href="node/add/question">Ask a Question</a></li> 
 </ul> '),
-    t('AddProblem'),
-    t('<ul class="action-links"> 
- <li><a href="node/add/problem">Add new Problem</a></li> 
-</ul> '),
     t('by'),
     t('author'),
     t('last revised'),
@@ -191,6 +187,7 @@ function planetmath_views_views_default_views() {
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['query']['options']['query_comment'] = FALSE;
   $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['exposed_form']['options']['autosubmit'] = TRUE;
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '20';
   $handler->display->display_options['pager']['options']['offset'] = '0';
@@ -282,6 +279,28 @@ function planetmath_views_views_default_views() {
   $handler->display->display_options['filters']['field_published_value']['value'] = array(
     1 => '1',
   );
+  /* Filter criterion: Content: Major Section (field_section) */
+  $handler->display->display_options['filters']['field_section_value']['id'] = 'field_section_value';
+  $handler->display->display_options['filters']['field_section_value']['table'] = 'field_data_field_section';
+  $handler->display->display_options['filters']['field_section_value']['field'] = 'field_section_value';
+  $handler->display->display_options['filters']['field_section_value']['value'] = array(
+    'all' => 'all',
+    'Collaboration' => 'Collaboration',
+    'Reference' => 'Reference',
+    'Research' => 'Research',
+    'Recreation' => 'Recreation',
+    'Education' => 'Education',
+  );
+  $handler->display->display_options['filters']['field_section_value']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['field_section_value']['expose']['operator_id'] = 'field_section_value_op';
+  $handler->display->display_options['filters']['field_section_value']['expose']['label'] = 'Major Section (field_section)';
+  $handler->display->display_options['filters']['field_section_value']['expose']['operator'] = 'field_section_value_op';
+  $handler->display->display_options['filters']['field_section_value']['expose']['identifier'] = 'section';
+  $handler->display->display_options['filters']['field_section_value']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
@@ -331,6 +350,7 @@ function planetmath_views_views_default_views() {
     t('Last updated by'),
     t('[name] on [changed]'),
     t('All'),
+    t('Major Section (field_section)'),
     t('Page'),
     t('Feed'),
   );
@@ -355,6 +375,7 @@ function planetmath_views_views_default_views() {
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['query']['options']['query_comment'] = FALSE;
   $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['exposed_form']['options']['autosubmit'] = TRUE;
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '20';
   $handler->display->display_options['pager']['options']['offset'] = '0';
@@ -447,6 +468,29 @@ function planetmath_views_views_default_views() {
   $handler->display->display_options['filters']['field_published_value']['value'] = array(
     1 => '1',
   );
+  /* Filter criterion: Content: Major Section (field_section) */
+  $handler->display->display_options['filters']['field_section_value']['id'] = 'field_section_value';
+  $handler->display->display_options['filters']['field_section_value']['table'] = 'field_data_field_section';
+  $handler->display->display_options['filters']['field_section_value']['field'] = 'field_section_value';
+  $handler->display->display_options['filters']['field_section_value']['value'] = array(
+    'all' => 'all',
+    'Collaboration' => 'Collaboration',
+    'Reference' => 'Reference',
+    'Research' => 'Research',
+    'Recreation' => 'Recreation',
+    'Education' => 'Education',
+  );
+  $handler->display->display_options['filters']['field_section_value']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['field_section_value']['expose']['operator_id'] = 'field_section_value_op';
+  $handler->display->display_options['filters']['field_section_value']['expose']['label'] = 'Major Section';
+  $handler->display->display_options['filters']['field_section_value']['expose']['operator'] = 'field_section_value_op';
+  $handler->display->display_options['filters']['field_section_value']['expose']['identifier'] = 'section';
+  $handler->display->display_options['filters']['field_section_value']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  $handler->display->display_options['filters']['field_section_value']['expose']['reduce'] = TRUE;
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
@@ -497,6 +541,7 @@ function planetmath_views_views_default_views() {
     t('Last updated by'),
     t('[name] on [changed]'),
     t('All'),
+    t('Major Section'),
     t('Page'),
     t('Feed'),
   );
@@ -2104,10 +2149,10 @@ else if (!$field_correction_closed){
   $handler->display->display_options['empty']['area']['id'] = 'area';
   $handler->display->display_options['empty']['area']['table'] = 'views';
   $handler->display->display_options['empty']['area']['field'] = 'area';
-  $handler->display->display_options['empty']['area']['label'] = 'AddProblem';
+  $handler->display->display_options['empty']['area']['label'] = 'AddQuestion';
   $handler->display->display_options['empty']['area']['empty'] = TRUE;
   $handler->display->display_options['empty']['area']['content'] = '<ul class="action-links"> 
- <li><a href="node/add/problem">Add new Problem</a></li> 
+ <li><a href="node/add/question">Add new Question</a></li> 
 </ul> ';
   $handler->display->display_options['empty']['area']['format'] = 'full_html';
   /* Relationship: Content: Author */
@@ -2205,10 +2250,6 @@ else if (!$field_correction_closed){
 <li><a href="answered-questions">Answered questions</a></li>
  <li><a href="node/add/question">Ask a Question</a></li> 
 </ul> '),
-    t('AddProblem'),
-    t('<ul class="action-links"> 
- <li><a href="node/add/problem">Add new Problem</a></li> 
-</ul> '),
     t('by'),
     t('author'),
     t('last revised'),
@@ -2257,7 +2298,7 @@ else if (!$field_correction_closed){
   $handler->display->display_options['header']['area']['field'] = 'area';
   $handler->display->display_options['header']['area']['label'] = 'AddReview';
   $handler->display->display_options['header']['area']['content'] = '<ul class="action-links"> 
- <li><a href="node/add/solution">Add new Review</a></li> 
+ <li><a href="node/add/review">Add new Review</a></li> 
 </ul> ';
   $handler->display->display_options['header']['area']['format'] = 'full_html';
   /* No results behavior: Global: Text area */
@@ -2267,7 +2308,7 @@ else if (!$field_correction_closed){
   $handler->display->display_options['empty']['area']['label'] = 'AddReview';
   $handler->display->display_options['empty']['area']['empty'] = TRUE;
   $handler->display->display_options['empty']['area']['content'] = '<ul class="action-links"> 
- <li><a href="node/add/solution">Add new Review</a></li> 
+ <li><a href="node/add/review">Add new Review</a></li> 
 </ul> ';
   $handler->display->display_options['empty']['area']['format'] = 'full_html';
   /* Relationship: Content: Author */
@@ -2306,7 +2347,7 @@ else if (!$field_correction_closed){
   $handler->display->display_options['arguments']['nid']['table'] = 'node';
   $handler->display->display_options['arguments']['nid']['field'] = 'nid';
   $handler->display->display_options['arguments']['nid']['title_enable'] = TRUE;
-  $handler->display->display_options['arguments']['nid']['title'] = 'Reviews of "%1"';
+  $handler->display->display_options['arguments']['nid']['title'] = 'Reviews attached to "%1"';
   $handler->display->display_options['arguments']['nid']['default_argument_type'] = 'fixed';
   $handler->display->display_options['arguments']['nid']['summary']['number_of_records'] = '0';
   $handler->display->display_options['arguments']['nid']['summary']['format'] = 'default_summary';
@@ -2333,12 +2374,12 @@ else if (!$field_correction_closed){
   $handler->display->display_options['path'] = 'reviews';
 
   /* Display: Feed */
-  $handler = $view->new_display('feed', 'Feed', 'solutionfeed_1');
+  $handler = $view->new_display('feed', 'Feed', 'reviewfeed_1');
   $handler->display->display_options['defaults']['hide_admin_links'] = FALSE;
   $handler->display->display_options['pager']['type'] = 'some';
   $handler->display->display_options['style_plugin'] = 'rss';
   $handler->display->display_options['row_plugin'] = 'node_rss';
-  $handler->display->display_options['path'] = 'solutions/rss.xml';
+  $handler->display->display_options['path'] = 'reviews/rss.xml';
   $handler->display->display_options['displays'] = array(
     'page' => 'page',
     'default' => 0,
@@ -2361,12 +2402,12 @@ else if (!$field_correction_closed){
     t('last »'),
     t('AddReview'),
     t('<ul class="action-links"> 
- <li><a href="node/add/solution">Add new Review</a></li> 
+ <li><a href="node/add/review">Add new Review</a></li> 
 </ul> '),
     t('by'),
     t('last revised'),
     t('All'),
-    t('Reviews of "%1"'),
+    t('Reviews attached to "%1"'),
     t('Page'),
     t('Feed'),
   );
@@ -2409,10 +2450,10 @@ else if (!$field_correction_closed){
   $handler->display->display_options['empty']['area']['id'] = 'area';
   $handler->display->display_options['empty']['area']['table'] = 'views';
   $handler->display->display_options['empty']['area']['field'] = 'area';
-  $handler->display->display_options['empty']['area']['label'] = 'AddProblem';
-  $handler->display->display_options['empty']['area']['empty'] = TRUE;
+  $handler->display->display_options['empty']['area']['label'] = 'AddArticle';
+  $handler->display->display_options['empty']['area']['empty'] = FALSE;
   $handler->display->display_options['empty']['area']['content'] = '<ul class="action-links"> 
- <li><a href="node/add/problem">Add new Problem</a></li> 
+ <li><a href="node/add/article">Add new Article</a></li> 
 </ul> ';
   $handler->display->display_options['empty']['area']['format'] = 'full_html';
   /* Relationship: Content: Author */
@@ -2505,9 +2546,9 @@ else if (!$field_correction_closed){
     t('‹ previous'),
     t('next ›'),
     t('last »'),
-    t('AddProblem'),
+    t('AddArticle'),
     t('<ul class="action-links"> 
- <li><a href="node/add/problem">Add new Problem</a></li> 
+ <li><a href="node/add/article">Add new Article</a></li> 
 </ul> '),
     t('by'),
     t('author'),
@@ -2717,10 +2758,10 @@ else if (!$field_correction_closed){
   $handler->display->display_options['empty']['area']['id'] = 'area';
   $handler->display->display_options['empty']['area']['table'] = 'views';
   $handler->display->display_options['empty']['area']['field'] = 'area';
-  $handler->display->display_options['empty']['area']['label'] = 'AddProblem';
+  $handler->display->display_options['empty']['area']['label'] = 'AddQuestion';
   $handler->display->display_options['empty']['area']['empty'] = TRUE;
   $handler->display->display_options['empty']['area']['content'] = '<ul class="action-links"> 
- <li><a href="node/add/problem">Add new Problem</a></li> 
+ <li><a href="node/add/question">Add new Question</a></li> 
 </ul> ';
   $handler->display->display_options['empty']['area']['format'] = 'full_html';
   /* Relationship: Content: Author */
@@ -2815,9 +2856,9 @@ else if (!$field_correction_closed){
     t('<ul class="action-links"> 
  <li><a href="node/add/question">Ask a Question</a></li> 
 </ul> '),
-    t('AddProblem'),
+    t('AddQuestion'),
     t('<ul class="action-links"> 
- <li><a href="node/add/problem">Add new Problem</a></li> 
+ <li><a href="node/add/question">Add new Question</a></li> 
 </ul> '),
     t('by'),
     t('author'),

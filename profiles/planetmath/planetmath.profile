@@ -90,6 +90,13 @@ function planetmath_install_tasks($install_state) {
                                         'run' => INSTALL_TASK_RUN_IF_NOT_COMPLETED,
                                         'function' => 'planetmath_profile_create_full_html_format',
                                         ),
+		 'my_0ath_task' => array(
+                                        'display_name' => st('Create Filtered Html format.'),
+                                        'display' => TRUE,
+                                        'type' => 'normal',
+                                        'run' => INSTALL_TASK_RUN_IF_NOT_COMPLETED,
+                                        'function' => 'planetmath_profile_create_filtered_html_format',
+                                        ),
 		 /* 'my_1st_task' => array( */
                  /*                        'display_name' => st('Patch the core.'), */
                  /*                        'display' => TRUE, */
@@ -168,13 +175,6 @@ function planetmath_install_tasks($install_state) {
                                         'run' => INSTALL_TASK_RUN_IF_NOT_COMPLETED,
                                         'function' => 'planetmath_profile_configure_captcha',
                                         ),
-                 'my_13th_task' => array(
-                                        'display_name' => st('Configure Menus'),
-                                        'display' => TRUE,
-                                        'type' => 'normal',
-                                        'run' => INSTALL_TASK_RUN_IF_NOT_COMPLETED,
-                                        'function' => 'planetmath_profile_setup_menus',
-                                        ),
                  'my_14th_task' => array(
                                         'display_name' => st('Choose and install the theme'),
                                         'display' => TRUE,
@@ -195,6 +195,13 @@ function planetmath_install_tasks($install_state) {
                                         'type' => 'normal',
                                         'run' => INSTALL_TASK_RUN_IF_NOT_COMPLETED,
                                         'function' => 'planetmath_profile_setup_permissions',
+                                        ),
+                 'my_13th_task' => array(
+                                        'display_name' => st('Configure Menus'),
+                                        'display' => TRUE,
+                                        'type' => 'normal',
+                                        'run' => INSTALL_TASK_RUN_IF_NOT_COMPLETED,
+                                        'function' => 'planetmath_profile_setup_menus',
                                         ),
                  );
   return $tasks;
@@ -228,6 +235,42 @@ function planetmath_profile_create_full_html_format() {
   );
   $full_html_format = (object) $full_html_format;
   filter_format_save($full_html_format);
+}
+
+function planetmath_profile_create_filtered_html_format() {
+    $filtered_html_format = array(
+    'format' => 'filtered_html',
+    'name' => 'Filtered HTML',
+    'weight' => 0,
+    'filters' => array(
+      
+      // URL filter.
+      'filter_url' => array(
+        'weight' => 0,
+        'status' => 1,
+      ),
+      
+      // HTML filter.
+      'filter_html' => array(
+        'weight' => 1,
+        'status' => 1,
+      ),
+      
+      // Line break filter.
+      'filter_autop' => array(
+        'weight' => 2,
+        'status' => 1,
+      ),
+      
+      // HTML corrector filter.
+      'filter_htmlcorrector' => array(
+        'weight' => 10,
+        'status' => 1,
+      ),
+    ),
+  );
+  $filtered_html_format = (object) $filtered_html_format;
+  filter_format_save($filtered_html_format);
 }
 
 function planetmath_profile_patch_core() {
@@ -1007,7 +1050,7 @@ function planetmath_profile_configure_blocks () {
                         'theme' => $theme_default,
                         'status' => 1,
                         'weight' => -26,
-                        'region' => 'header',
+                        'region' => 'sidebar_first',
                         'visibility' => 0,
                         'pages' => '',
                         'cache' => -1,
@@ -1026,6 +1069,17 @@ function planetmath_profile_configure_blocks () {
                   array(
                         'module' => 'system',
                         'delta' => 'navigation',
+                        'theme' => $theme_default,
+                        'status' => 1,
+                        'weight' => 1,
+                        'region' => 'sidebar_first',
+                        'visibility' => 0,
+                        'pages' => '',
+                        'cache' => -1,
+                        ),
+                  array(
+                        'module' => 'system',
+                        'delta' => 'main-menu',
                         'theme' => $theme_default,
                         'status' => 1,
                         'weight' => 0,
@@ -1320,6 +1374,26 @@ function planetmath_profile_configure_blocks () {
 		  // appear in the sidebar.  This could presumably be
 		  // done from within the planetmath_blocks module itself
                   // but no harm prototyping here.
+                  array('module' => 'planetmath_blocks',
+                        'delta' => 'revision',
+                        'theme' => variable_get('theme_default'),
+                        'status' => 1,
+                        'weight' => 0,
+                        'region' => 'sidebar_second',
+                        'visibility' => 1,
+                        'pages' => '<front>',
+                        'cache' => 1,
+                        ),
+                  array('module' => 'planetmath_blocks',
+                        'delta' => 'everything-else',
+                        'theme' => variable_get('theme_default'),
+                        'status' => 1,
+                        'weight' => 10,
+                        'region' => 'sidebar_first',
+                        'visibility' => 0,
+                        'pages' => '',
+                        'cache' => 1,
+                        ),
                   array(
                         'module' => 'planetmath_blocks',
                         'delta' => 'news',
@@ -1338,10 +1412,15 @@ function planetmath_profile_configure_blocks () {
                         'theme' => $theme_default,
                         'status' => 1,
                         'weight' => -32,
-                        'region' => 'frontpage_center',
+                        'region' => 'header',
                         'custom' => 1,
-                        'visibility' => 1,
-                        'pages' => '<front>',
+                        'visibility' => 2,
+                        'pages' => '<?php 
+  global $user;
+  if (drupal_is_front_page()) {
+  return !((bool) $user->uid);
+  } ; 
+?>',
                         'cache' => 1,
                         ),
 		  // this is giving an error claiming that
@@ -1352,7 +1431,7 @@ function planetmath_profile_configure_blocks () {
                         'delta' => 'correction',
                         'theme' => $theme_default,
                         'status' => 1,
-                        'weight' => -30,
+                        'weight' => -29,
                         'region' => 'sidebar_second',
                         'visibility' => 2,
                         'pages' => '<?php 
@@ -1401,7 +1480,7 @@ return false;
                         'delta' => 'pversion',
                         'theme' => $theme_default,
                         'status' => 1,
-                        'weight' => -34,
+                        'weight' => -28,
                         'region' => 'sidebar_second',
                         'visibility' => 2,
                         'pages' => '<?php 
@@ -1420,7 +1499,7 @@ return false;
                         'delta' => 'problem',
                         'theme' => $theme_default,
                         'status' => 1,
-                        'weight' => -32,
+                        'weight' => -30,
                         'region' => 'sidebar_second',
                         'visibility' => 2,
                         'pages' => '<?php 
@@ -1439,7 +1518,7 @@ return false;
                         'delta' => 'reverseproblem',
                         'theme' => $theme_default,
                         'status' => 1,
-                        'weight' => -32,
+                        'weight' => -30,
                         'region' => 'sidebar_second',
                         'visibility' => 2,
                         'pages' => '<?php 
@@ -1458,7 +1537,7 @@ return false;
                         'delta' => 'childarticles',
                         'theme' => $theme_default,
                         'status' => 1,
-                        'weight' => -32,
+                        'weight' => -31,
                         'region' => 'sidebar_second',
                         'visibility' => 2,
                         'pages' => '<?php 
@@ -1477,7 +1556,7 @@ return false;
                         'delta' => 'solution',
                         'theme' => $theme_default,
                         'status' => 1,
-                        'weight' => -32,
+                        'weight' => -30,
                         'region' => 'sidebar_second',
                         'visibility' => 2,
                         'pages' => '<?php 
@@ -1496,7 +1575,7 @@ return false;
                         'delta' => 'review',
                         'theme' => $theme_default,
                         'status' => 1,
-                        'weight' => -32,
+                        'weight' => -30,
                         'region' => 'sidebar_second',
                         'visibility' => 2,
                         'pages' => '<?php 
@@ -1744,7 +1823,7 @@ function planetmath_profile_configure_captcha (){
   db_merge('riddler_questions')
     ->key(array('qid'=> '1'))
     ->fields(array(
-      'question' => 'What is twice the base of the natural logarithm?',
+      'question' => 'What is twice the base of the natural logarithm? (Hint: Rhymes with "chewy".)',
       'answer' => '2e'))
     ->execute();
 }
@@ -1752,6 +1831,12 @@ function planetmath_profile_configure_captcha (){
 function planetmath_profile_set_misc_variables () {
   dd("Profile- In planetmath_profile_set_misc_variables");
   set_time_limit(0);
+
+  // This will prevent errors when indexing articles if the comment doesn't exist or
+  // if the user has been imported wrong.  The fact that I even have to add this 
+  // suggests that I had better check the user importing to make sure everyone comes
+  // along for the ride...
+  variable_set('apachesolr_exclude_nodeapi_types',array('article'=>array('comment'=>TRUE)));
 
   // set watchable content types
   variable_set('watcher_content_types', serialize(array(
@@ -1802,14 +1887,15 @@ function planetmath_profile_set_misc_variables () {
                                              'filter' => array (
                                                                 'type' => "blacklist",
                                                                 'list' => array(
-                                                                                'devel' => 0,
-                                                                                'main-menu' => 0,
-                                                                                'management' => 0,
-                                                                                'navigation' => 0,
-                                                                                'shortcut-set-1' => 0,
-                                                                                'user-menu' => 0
+                                                                         'devel' => 1,
+                                                                         'main-menu' => 1,
+                                                                         'management' => 1,
+                                                                         'navigation' => 0,
+                                                                         'shortcut-set-1' => 1,
+                                                                         'user-menu' => 1
                                                                     ))
                                              ));
+
 
   // this seems to be a way to make it so that articles are always versioned.
   variable_set('node_options_article', array (
@@ -2006,7 +2092,7 @@ function planetmath_profile_setup_user_entities () {
     planetmath_profile_docreate_user_field('user_country', 'Country');
     planetmath_profile_docreate_user_field('user_homepage', 'Homepage');
     planetmath_profile_docreate_user_field_long('user_preamble', 'Preamble', 'If you want to use a custom LaTeX preamble, enter it here, otherwise the site default will be used.');
-    planetmath_profile_docreate_user_field_long('user_bio', 'Bio', 'Tell us who you are!');
+    planetmath_profile_docreate_user_field_long_html('user_bio', 'Bio', 'Tell us who you are!');
     planetmath_profile_docreate_user_buddy_list_field();
 
     // Let's not port the score for now, they are being re-calculated; if we really
@@ -2064,7 +2150,7 @@ function planetmath_profile_setup_permissions () {
   // Run  SELECT * FROM role_permission;  in mysql to see the
   // list of available permissions
 
-  user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, array('access comments','access content','access news feeds','access user profiles','search content','use advanced search','cancel account','use text format tex_editor', 'create article content', 'create correction content', 'create forum content', 'create group content', 'create image content', 'create problem content', 'create review content', 'create solution content', 'create question content', 'edit own article content', 'edit own correction content', 'edit own forum content', 'edit own group content', 'edit own image content', 'edit own problem content', 'edit own review content', 'edit own solution content', 'edit own question content', 'delete own article content', 'delete own correction content', 'delete own group content', 'delete own image content', 'delete own problem content', 'delete own review content', 'delete own solution content', 'delete own question content', 'read privatemsg', 'write privatemsg', 'post comments', 'skip comment approval', 'edit own comments', 'view own userpoints', 'view userpoints', 'use watcher', 'change own user settings', 'access help page'));
+  user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, array('access comments','access content','access news feeds','access user profiles','search content','use advanced search','cancel account','use text format tex_editor', 'use text format filtered_html', 'create article content', 'create correction content', 'create forum content', 'create group content', 'create image content', 'create problem content', 'create review content', 'create solution content', 'create question content', 'create collection content', 'edit own article content', 'edit own correction content', 'edit own forum content', 'edit own group content', 'edit own image content', 'edit own problem content', 'edit own review content', 'edit own solution content', 'edit own question content', 'edit own collection content', 'delete own article content', 'delete own correction content', 'delete own group content', 'delete own image content', 'delete own problem content', 'delete own review content', 'delete own solution content', 'delete own question content', 'delete own correction content', 'read privatemsg', 'write privatemsg', 'post comments', 'skip comment approval', 'edit own comments', 'view own userpoints', 'view userpoints', 'use watcher', 'change own user settings', 'access help page'));
 
   return NULL;
 }
@@ -2073,8 +2159,9 @@ function planetmath_profile_setup_menus () {
   dd("Profile- In planetmath_profile_setup_menus");
   set_time_limit(0);
 
-  menu_link_delete('drutexml');
+  module_load_include('inc', 'menu', 'menu.admin');
 
+  menu_link_delete(NULL,'drutexml');
   // Update the menu router information.
   menu_rebuild();
   return NULL;
@@ -2200,6 +2287,34 @@ function planetmath_profile_docreate_user_field_long ($myField_name, $label, $de
             'formatter'     => array(
                 'label'     => t($label),
                 'format'    => 'text_default'
+            ),
+            'settings'      => array(
+            )
+        );
+        field_create_instance($field_instance);
+}
+
+function planetmath_profile_docreate_user_field_long_html ($myField_name, $label, $desc)
+{
+        $field = array(
+            'field_name'    => $myField_name,
+            'type'          => 'text_long',
+        );
+        field_create_field($field);
+
+        $field_instance = array(
+            'field_name'    => $myField_name,
+            'entity_type'   => 'user',
+            'bundle'        => 'user',
+            'label'         => t($label),
+            'description'   => t($desc),
+            'widget'        => array(
+                'type'      => 'text_textarea',
+                'weight'    => 10,
+            ),
+            'formatter'     => array(
+                'label'     => t($label),
+                'format'    => 'filtered_html'
             ),
             'settings'      => array(
             )
