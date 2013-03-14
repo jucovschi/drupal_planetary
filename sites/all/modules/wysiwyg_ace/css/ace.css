@@ -16,23 +16,23 @@ textarea .ace_editor {
 }
 
 .ui-button .envInsertIcon {
-	background-image: url(../images/addEnvironment.png);
+	background-image: url(addEnvironment.png);
 }
 
 .ui-button .bold {
-	background-image: url(../images/bold.png);
+	background-image: url(bold.png);
 }
 
 .ui-button .italic {
-	background-image: url(../images/italic.png);
+	background-image: url(italic.png);
 }
 
 .ui-button .share {
-	background-image: url(../images/share.png);
+	background-image: url(share.png);
 }
 
 .ui-button .formula {
-	background-image: url(../images/formula.png);
+	background-image: url(formula.png);
 }
 
 .linedWidgets .cmd_list {
@@ -59,3 +59,17 @@ textarea .ace_editor {
 }
 
 
+.semantic-select-widget-container {
+  max-width: 600px;
+}
+
+.semantic-select-widget-result {
+  float: left;
+  
+}
+
+.semantic-select-widget-categories {
+  float: right;
+  width: 180px;
+  height: 200px;
+}

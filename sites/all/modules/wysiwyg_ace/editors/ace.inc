@@ -21,6 +21,8 @@ function wysiwyg_ace_ace_editor() {
 				'files' => array(
 					'build/src-min-noconflict/ace.js',
 					'build/src-min-noconflict/keybinding-emacs.js',
+					'build/src-min-noconflict/mode-latex.js',
+					'build/src-min-noconflict/theme-textmate.js',
 					),
 				),
 			),
@@ -70,25 +72,19 @@ function wysiwyg_ace_ace_version($editor) {
 *   theme name.
 */
 function wysiwyg_ace_ace_themes($editor, $profile) {
-	/**
-	* TODO: just a STUB 
-	*/
 	$plugins = $profile->settings["buttons"]["default"];
 	$plugin_path = drupal_get_path("module", "wysiwyg_ace");
 	drupal_add_css($plugin_path."/css/ace.css", 
 		array(
-			"type" => "internal"
+			"type" => "file",
 			));
 	drupal_add_css($plugin_path."/editors/js/select_widget.css", array("type"=>"internal"));
 
-	#foreach ($plugins as $plugin=>$p) {
-	#	drupal_add_css($editor['library path'] . '/mode/'.$plugin.'/'.$plugin.'.css');
-	#	drupal_add_js($editor['library path'] . '/mode/'.$plugin.'/'.$plugin.'.js');
-	#}
 	$cpath = url("", array("absolute"=>true)).drupal_get_path("module", "wysiwyg_ace")."/editors/js/";
 	drupal_add_library('system', 'ui.button');
 	drupal_add_library('system', 'ui.dialog');
-	drupal_add_js($cpath."exhibit/exhibit-api.js?autoCreate=false", array("external"=>true));
+	drupal_add_js("Exhibit_urlPrefix='$cpath/exhibit/';", array("type"=>"inline"));
+	drupal_add_js($cpath."exhibit/exhibit-api.js", array("external"=>true));
 	drupal_add_js($cpath."text-prefix-complete.js", array("external"=>true));
 	drupal_add_js($cpath."emacs.js", array("external"=>true));
 	drupal_add_html_head_link(array(
@@ -96,7 +92,6 @@ function wysiwyg_ace_ace_themes($editor, $profile) {
       'type' => 'application/json',
       'href' => $cpath."/environments.js",
     ));
-
 
 	return array('default');
 }

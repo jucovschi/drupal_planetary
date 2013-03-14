@@ -42,6 +42,7 @@ Drupal.wysiwyg.editor.attach.ace = function(context, params, settings) {
 	  
   	jQuery(obj).after(editordiv);
   	var editor = ace.edit("ace_"+params.field);
+    window.editor = editor;
 	  window.ace_toolbar.initToolbar(editor);
 	  editor.getSession().setValue(obj.value);
 	  editor.setTheme("ace/theme/textmate");
