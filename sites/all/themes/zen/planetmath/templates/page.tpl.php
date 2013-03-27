@@ -91,7 +91,7 @@ $jq(document).ready(function () {
 </script>
 
 <?php if ($is_front): ?>
-<link type="text/css" rel="stylesheet" media="all" href="/sites/all/themes/zen/planetmath/css/front.css" />
+<link type="text/css" rel="stylesheet" media="all" href="./sites/all/themes/zen/planetmath/css/front.css" />
 <?php endif; ?>
 
 <div id="page-wrapper"><div id="page">
@@ -175,7 +175,8 @@ $jq(document).ready(function () {
       <?php print $feed_icons; ?>
     </div></div><!-- /.section, /#content -->
     <?php } else { ?>
-      <?php require_once('frontpage.tpl.php') ?>
+      <?php  print $messages;
+	     require_once('frontpage.tpl.php') ?>
     <?php } ?>
 
     <?php if ($page['navigation']): ?>
