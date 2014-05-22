@@ -21,6 +21,8 @@ function wysiwyg_ace_ace_editor() {
 				'files' => array(
 					'build/src-min-noconflict/ace.js',
 					'build/src-min-noconflict/keybinding-emacs.js',
+					'build/src-min-noconflict/mode-latex.js',
+					'build/src-min-noconflict/theme-textmate.js',
 					),
 				),
 			),
@@ -74,7 +76,7 @@ function wysiwyg_ace_ace_themes($editor, $profile) {
 	$plugin_path = drupal_get_path("module", "wysiwyg_ace");
 	drupal_add_css($plugin_path."/css/ace.css", 
 		array(
-			"type" => "internal"
+			"type" => "file",
 			));
 	drupal_add_css($plugin_path."/editors/js/select_widget.css", array("type"=>"internal"));
 

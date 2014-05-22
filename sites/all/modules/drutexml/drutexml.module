@@ -128,6 +128,7 @@ function drutexml_filter_info() {
       'latexml_url' => 'http://latexml.mathweb.org/convert',
       'latexml_profile' => 'planetmath',
       'latexml_preamble' => '',
+      'latexml_profile' => 'planetmath',
     ),
     'cache' => $debug_drutexml == 0,
     'settings callback' => '_drutexml_filter_latex_settings',
@@ -305,7 +306,7 @@ function _drutexml_filter_latex_settings($form, $form_state, $filter, $format, $
     '#description' => t('The URL of the LaTeXMl daemon.'),
   );
   $settings['latexml_profile'] = array(
-    '#type' => 'textarea',
+    '#type' => 'textfield',
     '#title' => t('Profile to be used'),
     '#default_value' => isset($filter->settings['latexml_profile']) ? $filter->settings['latexml_profile'] : $defaults['latexml_profile'],
     '#description' => t('The profile to be used for the daemon.'),
